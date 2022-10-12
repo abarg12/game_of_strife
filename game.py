@@ -1,6 +1,7 @@
 import sys
 import pygame
 
+pygame.init()
 
 # The binary universe
 black = 0, 0, 0
@@ -11,22 +12,80 @@ UNIVERSE_SIZE = 64
 size = width, height = UNIVERSE_SIZE*10, UNIVERSE_SIZE*10
 screen = pygame.display.set_mode(size)
 
-# Genesis
-universe = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
-print(universe)
+# Initial game message
+screen.fill(white)
+pygame.display.set_caption('Game of Strife')
+font = pygame.font.Font('freesansbold.ttf', 16)
+text = font.render('Click on screen to spawn life, then press enter to begin the simulation', True, white, black)
+textRect = text.get_rect()
+textRect.center = (size[0] // 2, size[1] // 2)
+screen.blit(text, textRect)
+pygame.display.update()
 
-for i in range(UNIVERSE_SIZE):
-    for j in range(UNIVERSE_SIZE):
-        if (((i+j) % 2) == 0):
-            universe[i][j] = 1
-print(universe)
 
+# Universal laws
+def update_universe():
+    calculate_neighbors()
+    for i in range(UNIVERSE_SIZE):
+        for j in range(UNIVERSE_SIZE):
+            if (universe_popgrid[i][j] < 2):
+                # underpopulation death
+                universe[i][j] = 0
+            elif (universe_popgrid[i][j] > 3):
+                # overpopulation death
+                universe[i][j] = 0
+            elif (universe_popgrid[i][j] == 3):
+                universe[i][j] = 1
+            
+def calculate_neighbors():
+    for k in range(UNIVERSE_SIZE): 
+        for l in range(UNIVERSE_SIZE):
+            universe_popgrid[k][l] = 0
     
-while 1:
+    for i in range(UNIVERSE_SIZE):
+        for j in range(UNIVERSE_SIZE):
+            if universe[i][j] == 1:
+                increment_neighbors(i, j)
+                
+def increment_neighbors(i, j):
+   for k in range(i-1, i+2):
+        for l in range(j-1, j+2):
+            if (i == k and j == l):
+                continue 
+            elif (k < 0 or k >= UNIVERSE_SIZE):
+                continue 
+            elif (l < 0 or l >= UNIVERSE_SIZE):
+                continue 
+            else:
+                universe_popgrid[k][l] += 1
+
+
+
+BC = True  # before click
+while BC:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
+        if event.type == pygame.KEYDOWN: BC = False
+        if event.type == pygame.MOUSEBUTTONDOWN: BC = False
+
+
+# Genesis
+universe = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
+universe_popgrid = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
+screen.fill(black)
+
+BC = True 
+while BC:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT: sys.exit()    
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            # the power to create life
+            universe[int(pos[0] / 10)][int(pos[1] / 10)] = 1
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                BC = False
     
-    screen.fill(black)
     for i in range(UNIVERSE_SIZE):
         for j in range(UNIVERSE_SIZE):
             if (universe[i][j] == 1):
@@ -34,3 +93,26 @@ while 1:
                 pygame.draw.rect(screen, white, rectangle1)
     pygame.display.update() 
        
+
+# update universe every half-second
+UNIVERSE_TICK = pygame.USEREVENT + 1
+pygame.time.set_timer(UNIVERSE_TICK, 500)
+
+
+E = True  # while universe exists
+while E:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT: sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+                sys.exit()
+        if event.type == UNIVERSE_TICK:
+            update_universe()
+            screen.fill(black)
+            for i in range(UNIVERSE_SIZE):
+                for j in range(UNIVERSE_SIZE):
+                    if (universe[i][j] == 1):
+                        rectangle1 = pygame.Rect(i*10, j*10, 10, 10)
+                        pygame.draw.rect(screen, white, rectangle1)
+            pygame.display.update()
+
