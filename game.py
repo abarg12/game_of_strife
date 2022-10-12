@@ -2,6 +2,7 @@ import sys
 import pygame
 
 pygame.init()
+pygame.font.init()
 
 # The binary universe
 black = 0, 0, 0
@@ -15,10 +16,10 @@ screen = pygame.display.set_mode(size)
 # Initial game message
 screen.fill(white)
 pygame.display.set_caption('Game of Strife')
-font = pygame.font.Font('freesansbold.ttf', 16)
+font = pygame.font.SysFont("Arial", 24)
 text = font.render('Click on screen to spawn life, then press enter to begin the simulation', True, white, black)
 textRect = text.get_rect()
-textRect.center = (size[0] // 2, size[1] // 2)
+textRect.center = (size[0] // 2, size[1] // 3)
 screen.blit(text, textRect)
 pygame.display.update()
 
