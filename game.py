@@ -7,6 +7,7 @@ pygame.font.init()
 # The binary universe
 black = 0, 0, 0
 white = 255, 255, 255
+green = 40, 255, 80
 UNIVERSE_SIZE = 64
 
 # A window into the universe
@@ -46,19 +47,34 @@ def calculate_neighbors():
     for i in range(UNIVERSE_SIZE):
         for j in range(UNIVERSE_SIZE):
             if universe[i][j] == 1:
-                increment_neighbors(i, j)
+                increment_neighbors_normal(i, j)
+            if universe[i][j] == 2:
+                increment_neighbors_swarm(i, j)
                 
-def increment_neighbors(i, j):
+def increment_neighbors_normal(i, j):
    for k in range(i-1, i+2):
         for l in range(j-1, j+2):
             if (i == k and j == l):
                 continue 
-            elif (k < 0 or k >= UNIVERSE_SIZE):
+            elif (k < 0 or k >= universe_size):
                 continue 
-            elif (l < 0 or l >= UNIVERSE_SIZE):
+            elif (l < 0 or l >= universe_size):
                 continue 
             else:
                 universe_popgrid[k][l] += 1
+
+def increment_neighbors_swarm(i, j):
+    for k in range(i-1, i+2):
+        for l in range(j-1, j+2):
+            if (i == k and j == l):
+                continue 
+            elif (k < 0 or k >= universe_size):
+                continue 
+            elif (l < 0 or l >= universe_size):
+                continue 
+            else:
+                universe_popgrid_swarm[k][l] += 1
+
 
 
 
@@ -73,6 +89,7 @@ while BC:
 # Genesis
 universe = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
 universe_popgrid = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
+universe_swarm_popgrid = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
 screen.fill(black)
 
 BC = True 
@@ -81,8 +98,13 @@ while BC:
         if event.type == pygame.QUIT: sys.exit()    
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
-            # the power to create life
-            universe[int(pos[0] / 10)][int(pos[1] / 10)] = 1
+            if event.button == 1:
+                # the power to create life
+                universe[int(pos[0] / 10)][int(pos[1] / 10)] = 1
+            if event.button == 2:
+                # the power to create chaos
+                universe[int(pos[0] / 10)][int(pos[1] / 10)] = 2
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 BC = False
@@ -92,6 +114,9 @@ while BC:
             if (universe[i][j] == 1):
                 rectangle1 = pygame.Rect(i*10, j*10, 10, 10)
                 pygame.draw.rect(screen, white, rectangle1)
+            if (universe[i][j] == 2):
+                rectangle2 = pygame.Rect(i*10, j*10, 10, 10)
+                pygame.draw.rect(screen, green, rectangle2)
     pygame.display.update() 
        
 
