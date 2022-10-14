@@ -19,9 +19,13 @@ screen.fill(white)
 pygame.display.set_caption('Game of Strife')
 font = pygame.font.SysFont("Arial", 24)
 text = font.render('Click on screen to spawn life, then press enter to begin the simulation', True, white, black)
+text2 = font.render('Left click for normal life, right click for the swarm', True, white, black)
 textRect = text.get_rect()
+textRect2 = text2.get_rect()
 textRect.center = (size[0] // 2, size[1] // 3)
+textRect2.center = (size[0] // 2, size[1] // 3 + 40)
 screen.blit(text, textRect)
+screen.blit(text2, textRect2)
 pygame.display.update()
 
 
@@ -38,6 +42,18 @@ def update_universe():
                 universe[i][j] = 0
             elif (universe_popgrid[i][j] == 3):
                 universe[i][j] = 1
+
+            if (universe_popgrid_swarm[i][j] < 2):
+                if (universe[i][j] != 1):
+                    universe[i][j] = 0
+            elif (universe_popgrid_swarm[i][j] > 3):
+                if (universe[i][j] != 1):
+                    # overpopulation death
+                    universe[i][j] = 0
+            elif (universe_popgrid_swarm[i][j] == 3 or universe_popgrid_swarm[i][j] == 2):
+                universe[i][j] = 2
+
+
             
 def calculate_neighbors():
     for k in range(UNIVERSE_SIZE): 
@@ -56,9 +72,9 @@ def increment_neighbors_normal(i, j):
         for l in range(j-1, j+2):
             if (i == k and j == l):
                 continue 
-            elif (k < 0 or k >= universe_size):
+            elif (k < 0 or k >= UNIVERSE_SIZE):
                 continue 
-            elif (l < 0 or l >= universe_size):
+            elif (l < 0 or l >= UNIVERSE_SIZE):
                 continue 
             else:
                 universe_popgrid[k][l] += 1
@@ -68,9 +84,9 @@ def increment_neighbors_swarm(i, j):
         for l in range(j-1, j+2):
             if (i == k and j == l):
                 continue 
-            elif (k < 0 or k >= universe_size):
+            elif (k < 0 or k >= UNIVERSE_SIZE):
                 continue 
-            elif (l < 0 or l >= universe_size):
+            elif (l < 0 or l >= UNIVERSE_SIZE):
                 continue 
             else:
                 universe_popgrid_swarm[k][l] += 1
@@ -89,7 +105,7 @@ while BC:
 # Genesis
 universe = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
 universe_popgrid = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
-universe_swarm_popgrid = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
+universe_popgrid_swarm = [[0]*UNIVERSE_SIZE for i in range(UNIVERSE_SIZE)]
 screen.fill(black)
 
 BC = True 
@@ -101,7 +117,7 @@ while BC:
             if event.button == 1:
                 # the power to create life
                 universe[int(pos[0] / 10)][int(pos[1] / 10)] = 1
-            if event.button == 2:
+            if event.button == 3:
                 # the power to create chaos
                 universe[int(pos[0] / 10)][int(pos[1] / 10)] = 2
 
@@ -140,5 +156,8 @@ while E:
                     if (universe[i][j] == 1):
                         rectangle1 = pygame.Rect(i*10, j*10, 10, 10)
                         pygame.draw.rect(screen, white, rectangle1)
+                    if (universe[i][j] == 2):
+                        rectangle2 = pygame.Rect(i*10, j*10, 10, 10)
+                        pygame.draw.rect(screen, green, rectangle2)
             pygame.display.update()
 
